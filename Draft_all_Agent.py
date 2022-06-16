@@ -51,8 +51,8 @@ class SimpleAgent(BaseAgent):
         self.spread_market[market_id] = (book_state['L1-AskPrice'] - book_state['L1-BidPrice']) / midpoint
         self.min_quant_ask[market_id] = math.ceil(self.min_vol_quote / book_state['L1-BidPrice'])
         self.min_quant_bid[market_id] = math.ceil(self.min_vol_quote / book_state['L1-AskPrice'])
-        self.max_quant_ask[market_id] = max(math.floor(self.market_interface.exposure_left / book_state['L1-BidPrice']),0)
-        self.max_quant_bid[market_id] = max(math.floor(self.market_interface.exposure_left / book_state['L1-AskPrice']),0)
+        self.max_quant_ask[market_id] = max(math.floor(0.95*self.market_interface.exposure_left / book_state['L1-BidPrice']),0)
+        self.max_quant_bid[market_id] = max(math.floor(0.95* self.market_interface.exposure_left / book_state['L1-AskPrice']),0)
 
         trades_buy = self.market_interface.get_filtered_trades(market_id, side="buy")
         trades_sell = self.market_interface.get_filtered_trades(market_id, side="sell")
