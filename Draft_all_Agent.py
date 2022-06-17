@@ -165,9 +165,27 @@ class SimpleAgent(BaseAgent):
 
 
 #############Evaluation################################
+    ##reset iterative variables:
+        if self.sess_length == datetime.timedelta(0):
+            self.titm = {}  # Time in the market dictionary
+            self.VWAP = {}  # stores the VWAP realized of the agent per share
+            self.VWAP_Market = {}  # stores the Market VWAP realized
+            self.D_V_M = {}  # accumalates dollar volume traded per share in the back testing session
+            self.T_V_M = {}  # accumalates volume traded per share in the back testing session
+            self.VWAP_buy = {}
+            self.VWAP_sell = {}
+            self.VWAP_Score = {}  # stores the VWAP Score of market VWAP and share VWAP
+            self.trigger_storage_stop_loss = {}
+            self.trigger_storage_take_prof = {}
+            self.exposure_check = 0
+            self.exposure_stor = [0]
+            self.iterer = datetime.timedelta(seconds=30)
+
+
         # calculate the Session length:
         delta = timestamp_next - timestamp
         self.sess_length = self.sess_length + delta
+
         ###Calculate Time in the market per Share and trading costs per share
         for market_id in self.market_interface.market_state_list.keys():
             if len(self.market_interface.get_filtered_orders(market_id, status="ACTIVE", side= "sell" )) and \
@@ -179,7 +197,6 @@ class SimpleAgent(BaseAgent):
                     self.titm[market_id] = self.titm[market_id] + delta
 
         ##store exposure development
-
         if self.sess_length >= self.iterer:
             self.exposure_stor.append(self.market_interface.exposure_total)
             self.iterer = self.iterer + datetime.timedelta(seconds=30)
@@ -214,7 +231,6 @@ class SimpleAgent(BaseAgent):
             trigger_storage_stop_loss_df = pd.DataFrame.from_dict(self.trigger_storage_stop_loss, orient='index')
             volume_df = pd.DataFrame.from_dict(volume, orient='index')
             trading_costs_df = pd.DataFrame.from_dict(trading_costs, orient='index')
-            exposure_stor_df = pd.DataFrame(self.exposure_stor)
 
             titm_df.columns = [str(timestamp)]
             proz_titm_df.columns = ["%-Time in the Market"]
@@ -240,7 +256,7 @@ class SimpleAgent(BaseAgent):
             trading_costs_df = trading_costs_df.transpose()
 
             global result_exposure
-            result_exposure[str(timestamp)] = exposure_stor_df
+            result_exposure[timestamp] = self.exposure_stor
 
             global result_per_Share
             result_per_Share = result_per_Share.append([titm_df,proz_titm_df,VWAP_score_df,pnl_df,trades_df,trigger_storage_take_prof_df,
@@ -261,6 +277,8 @@ class SimpleAgent(BaseAgent):
                     "pnl_unrealized": self.market_interface.pnl_unrealized_total,
                 }
                 , ignore_index=True)
+
+
 
 if __name__ == "__main__":
 
