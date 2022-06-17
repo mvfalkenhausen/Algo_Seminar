@@ -12,7 +12,7 @@ import sys
 ##global result storage:
 result_matrix = pd.DataFrame()
 result_per_Share = pd.DataFrame()
-
+result_exposure = pd.DataFrame()
 
 class SimpleAgent(BaseAgent):
     def __init__(self, name: str):
@@ -44,6 +44,8 @@ class SimpleAgent(BaseAgent):
         self.trigger_storage_stop_loss = {}
         self.trigger_storage_take_prof = {}
         self.exposure_check = 0
+        self.exposure_stor = [0]
+        self.iterer = datetime.timedelta(seconds=30)
 
     def on_quote(self, market_id: str, book_state: pd.Series):
 
@@ -176,6 +178,12 @@ class SimpleAgent(BaseAgent):
                     delta = timestamp_next - timestamp
                     self.titm[market_id] = self.titm[market_id] + delta
 
+        ##store exposure development
+
+        if self.sess_length >= self.iterer:
+            self.exposure_stor.append(self.market_interface.exposure_total)
+            self.iterer = self.iterer + datetime.timedelta(seconds=30)
+
         ######store values at the end of a session###
         if timestamp == timestamp_next:
 
@@ -206,6 +214,7 @@ class SimpleAgent(BaseAgent):
             trigger_storage_stop_loss_df = pd.DataFrame.from_dict(self.trigger_storage_stop_loss, orient='index')
             volume_df = pd.DataFrame.from_dict(volume, orient='index')
             trading_costs_df = pd.DataFrame.from_dict(trading_costs, orient='index')
+            exposure_stor_df = pd.DataFrame(self.exposure_stor)
 
             titm_df.columns = [str(timestamp)]
             proz_titm_df.columns = ["%-Time in the Market"]
@@ -230,6 +239,8 @@ class SimpleAgent(BaseAgent):
             volume_df = volume_df.transpose()
             trading_costs_df = trading_costs_df.transpose()
 
+            global result_exposure
+            result_exposure[str(timestamp)] = exposure_stor_df
 
             global result_per_Share
             result_per_Share = result_per_Share.append([titm_df,proz_titm_df,VWAP_score_df,pnl_df,trades_df,trigger_storage_take_prof_df,
@@ -308,4 +319,5 @@ name_of_file = "result_" + agent.name + ".xlsx"
 writer = pd.ExcelWriter(name_of_file)
 result_matrix.to_excel(writer,"result_matrix")
 result_per_Share.to_excel(writer,"result_per_Share")
+result_exposure.to_excel(writer, "exposure_history")
 writer.save()
