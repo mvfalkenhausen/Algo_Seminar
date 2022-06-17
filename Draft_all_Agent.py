@@ -255,14 +255,13 @@ class SimpleAgent(BaseAgent):
             volume_df = volume_df.transpose()
             trading_costs_df = trading_costs_df.transpose()
 
-            global result_exposure
-            result_exposure[timestamp] = self.exposure_stor
+            global result_exposure, result_per_Share, result_matrix
 
-            global result_per_Share
+            result_exposure = result_exposure.append(self.exposure_stor)
+
             result_per_Share = result_per_Share.append([titm_df,proz_titm_df,VWAP_score_df,pnl_df,trades_df,trigger_storage_take_prof_df,
                                                         trigger_storage_stop_loss_df,volume_df,trading_costs_df,pnl_unr_df])
 
-            global result_matrix
             result_matrix = result_matrix.append(
                 {
                     "timestamp": str(timestamp),
