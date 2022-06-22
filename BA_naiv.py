@@ -140,8 +140,6 @@ class SimpleAgent(BaseAgent):
 
     def on_time(self, timestamp: pd.Timestamp, timestamp_next: pd.Timestamp):
 
-
-
 #############Evaluation################################
         ##reset iterative variables:
         if self.sess_length == datetime.timedelta(0):
@@ -163,8 +161,8 @@ class SimpleAgent(BaseAgent):
         # calculate the Session length:
         delta = timestamp_next - timestamp
         self.sess_length = self.sess_length + delta
-        #store every Second:
-        if self.milliseconds > self.sess_length:
+        #store every 100 miliSecond:
+        if self.milliseconds < self.sess_length:
             self.milliseconds = self.milliseconds + datetime.timedelta(milliseconds=100)
              ###Calculate Time in the market per Share
             for market_id in self.market_interface.market_state_list.keys():
@@ -177,7 +175,7 @@ class SimpleAgent(BaseAgent):
 
         ##store exposure development
 
-        if self.milliseconds >= self.iterer:
+        if self.milliseconds > self.iterer:
             exposure = self.market_interface.exposure
             total_net_exposure = sum(exposure.values())
             self.exposure_stor.append(total_net_exposure)
@@ -299,28 +297,29 @@ class SimpleAgent(BaseAgent):
 
 
 
+
 if __name__ == "__main__":
 
 
     identifier_list = [
        # ADIDAS
-       #"Adidas.BOOK", "Adidas.TRADES",
+       "Adidas.BOOK", "Adidas.TRADES",
        # ALLIANZ
        "Allianz.BOOK", "Allianz.TRADES",
        # BASF
        "BASF.BOOK", "BASF.TRADES",
        # Bayer
-       #"Bayer.BOOK", "Bayer.TRADES",
+       "Bayer.BOOK", "Bayer.TRADES",
        # BMW
-       #"BMW.BOOK", "BMW.TRADES",
+       "BMW.BOOK", "BMW.TRADES",
        # Continental
-       #"Continental.BOOK", "Continental.TRADES",
+       "Continental.BOOK", "Continental.TRADES",
        # Covestro
-       #"Covestro.BOOK", "Covestro.TRADES",
+       "Covestro.BOOK", "Covestro.TRADES",
        # Daimler
-       #"Daimler.BOOK", "Daimler.TRADES",
+       "Daimler.BOOK", "Daimler.TRADES",
        # Deutsche Bank
-       #"DeutscheBank.BOOK", "DeutscheBank.TRADES",
+       "DeutscheBank.BOOK", "DeutscheBank.TRADES",
        # DeutscheBörse
        #"DeutscheBörse.BOOK", "DeutscheBörse.TRADES",
     ]
@@ -338,11 +337,11 @@ if __name__ == "__main__":
     backtest.run_episode_generator(identifier_list=identifier_list,
         date_start="2021-02-01",
         date_end="2021-02-28",
-        episode_interval=30, #30
+        episode_interval=4, #30
         episode_shuffle=True, 
-        episode_buffer=2,  #2
-        episode_length=6,  ##6 length - buffer = traiding time of the agent
-        num_episodes=2,  #2
+        episode_buffer=5,  #2
+        episode_length=9,  ##6 length - buffer = traiding time of the agent
+        num_episodes=4,  #2
         seed = 5,
     )
 
